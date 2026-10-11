@@ -1,6 +1,6 @@
 namespace Booking.Domain;
 
-public class Booking
+public class BookingDetails
 {
     public int Id { get; set; }
     public DateTime CheckInDate { get; set; }

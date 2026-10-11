@@ -1,3 +1,5 @@
+namespace Booking.Domain;
+
 public class Resource
 {
     public int Id { get; set; }

@@ -1,3 +1,9 @@
+using Booking.Application;
+using Booking.Infrastructure.Persistence;
+using Booking.Infrastructure.Queries;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,6 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+var connectionString = builder.Configuration.GetConnectionString("BookingDb")
+    ?? throw new InvalidOperationException(
+        "Connection string 'BookingDb' is missing.");
+
+builder.Services.AddDbContext<BookingDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddScoped<IUserQueries, UserQueries>();
+builder.Services.AddScoped<IBookingQueries, BookingQueries>();
 
 var app = builder.Build();
 
