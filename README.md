@@ -1,6 +1,21 @@
 # Backend-capstone-booking-api
-Practicing C# focused on the backend of a bookin app
+Practicing C# focused on the backend of a booking app.
 
+This repository follows a simple layered architecture under `src/`:
+
+## Project structure
+
+### Booking.Api
+This is the ASP.NET Core Web API entry point. It contains the application startup, dependency injection setup, controller endpoints, and HTTP configuration. In this project, the API exposes the booking and resource endpoints, maps the health check route, and wires the `BookingApplication` contracts to the infrastructure implementations.
+
+### Booking.Application
+This layer contains the application logic and contracts that define what the system can do without depending on the concrete database or transport implementation. It includes the query interfaces used by the API and represents the business operations the application supports.
+
+### Booking.Domain
+This is the core business model of the application. It contains the domain entities such as `Resource`, `User`, and `BookingDetails`, which represent the main concepts of the booking domain. This layer should stay free from database and HTTP concerns.
+
+### Booking.Infrastructure
+This layer implements the application’s technical concerns, especially persistence and data access. It contains the EF Core context, database-related query implementations, and infrastructure code that connects the application layer to PostgreSQL or other external systems.
 
 Local database with Docker Compose
 ----------------------------------

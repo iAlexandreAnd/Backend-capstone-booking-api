@@ -22,8 +22,13 @@ public sealed class UserQueries(BookingDbContext dbContext) : IUserQueries
         string firstName,
         CancellationToken cancellationToken)
     {
+        var generatedId = await dbContext.Database
+        .SqlQuery<long>($"SELECT nextval('globalID') AS \"Value\"")
+        .SingleAsync(cancellationToken);
+        
         var user = new User
         {
+            Id = checked((int)generatedId),
             LastName = lastName,
             FirstName = firstName,
             Bookings = new List<BookingDetails>()
