@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Booking.Api.DTO;
 
-public sealed class CreateUserRequestDto
+public sealed record CreateUserRequestDto
 {
     [Required]
     [StringLength(100)]

@@ -8,7 +8,7 @@ public interface IUserQueries
         string lastName,
         CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<User>> CreateUserAsync(
+    Task<User> CreateUserAsync(
         string lastName,
         string firstName,
         CancellationToken cancellationToken);

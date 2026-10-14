@@ -17,7 +17,7 @@ public sealed class UserQueries(BookingDbContext dbContext) : IUserQueries
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<User>> CreateUserAsync(
+    public async Task<User> CreateUserAsync(
         string lastName,
         string firstName,
         CancellationToken cancellationToken)
@@ -37,6 +37,6 @@ public sealed class UserQueries(BookingDbContext dbContext) : IUserQueries
         dbContext.Users.Add(user);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return new[] { user };
+        return user;
     }
 }

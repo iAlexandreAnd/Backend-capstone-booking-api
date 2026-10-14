@@ -8,5 +8,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Booking.Application.Tests/Booking.Application.Tests.csproj" />
     <Project Path="tests/Booking.Domain.Tests/Booking.Domain.Tests.csproj" />
+    <Project Path="tests/Booking.Api.Tests/Booking.Api.Tests.csproj" />
   </Folder>
 </Solution>

@@ -1,3 +1,4 @@
+using Booking.Api.DTO;
 using Booking.Application;
 using Booking.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -26,26 +27,23 @@ public sealed class UsersController(IUserQueries userQueries) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<IReadOnlyList<User>>> CreateUser(
-        [FromQuery] string lastName,
-        [FromQuery] string firstName,
+    public async Task<ActionResult<UserDto>> CreateUser(
+        [FromBody] CreateUserRequestDto request,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(lastName))
-        {
-            return BadRequest("The lastName query parameter is required.");
-        }
-        if (string.IsNullOrWhiteSpace(firstName))
-        {
-            return BadRequest("The firstName query parameter is required.");
-        }
+        var user = await userQueries.CreateUserAsync(
+        request.LastName.Trim(),
+        request.FirstName.Trim(),
+        cancellationToken);
 
-        var users = await userQueries.CreateUserAsync(
-            lastName.Trim(),
-            firstName.Trim(),
-            cancellationToken);
+        var response = new UserDto
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName
+        };
 
-        return Ok(users);
+        return Ok(response);
     }
 }
 
