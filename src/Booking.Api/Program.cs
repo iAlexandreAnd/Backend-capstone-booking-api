@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,6 +32,7 @@ builder.Services.AddScoped<IBookingQueries, BookingQueries>();
 var app = builder.Build();
 
 await SeedRolesAsync(app);
+await CreateAdminUser(app, builder);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -76,5 +79,59 @@ static async Task SeedRolesAsync(WebApplication app)
         }
     }
 }
+
+static async Task CreateAdminUser(WebApplication app, WebApplicationBuilder builder)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var userManager = scope.ServiceProvider
+        .GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider
+        .GetRequiredService<RoleManager<ApplicationRole>>();
+    
+    const string roleName = "Admin";
+    if (!await roleManager.RoleExistsAsync(roleName))
+    {
+        throw new InvalidOperationException($"Role '{roleName}' does not exist.");
+    }
+
+    var email = builder.Configuration["Admin:Email"]
+    ?? throw new InvalidOperationException("Admin:Email is missing.");
+    var password = builder.Configuration["Admin:Password"]
+    ?? throw new InvalidOperationException("Admin:Password is missing.");
+
+    var user = await userManager.FindByEmailAsync(email);
+
+    if (user is null)
+    {
+        user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            FirstName = "Admin",
+            LastName = "Admin"
+        };
+
+        var createResult = await userManager.CreateAsync(user, password);
+        if (!createResult.Succeeded)
+        {
+            var errors = string.Join("; ",
+                createResult.Errors.Select(error => error.Description));
+            throw new InvalidOperationException($"Could not create admin user: {errors}");
+        }
+    }
+
+    if (!await userManager.IsInRoleAsync(user, roleName))
+    {
+        var roleResult = await userManager.AddToRoleAsync(user, roleName);
+        if (!roleResult.Succeeded)
+        {
+            var errors = string.Join("; ",
+                roleResult.Errors.Select(error => error.Description));
+            throw new InvalidOperationException($"Could not add admin to role: {errors}");
+        }
+    }
+}
+
+
 
 public partial class Program { }
