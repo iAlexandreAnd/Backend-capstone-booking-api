@@ -11,7 +11,7 @@ public sealed class UserQueries(BookingDbContext dbContext) : IUserQueries
         string lastName,
         CancellationToken cancellationToken)
     {
-        return await dbContext.Users
+        return await dbContext.DomainUsers
             .AsNoTracking()
             .Where(user => user.LastName == lastName)
             .ToListAsync(cancellationToken);
@@ -34,7 +34,7 @@ public sealed class UserQueries(BookingDbContext dbContext) : IUserQueries
             Bookings = new List<BookingDetails>()
         };
 
-        dbContext.Users.Add(user);
+        dbContext.DomainUsers.Add(user);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return user;
