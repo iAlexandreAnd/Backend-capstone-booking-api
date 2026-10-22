@@ -1,11 +1,13 @@
 using Booking.Api.DTO;
 using Booking.Application;
 using Booking.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("users")]
 public sealed class UsersController(IUserQueries userQueries) : ControllerBase
 {

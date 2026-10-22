@@ -1,9 +1,13 @@
 using Booking.Application;
 using Booking.Infrastructure.Persistence;
 using Booking.Infrastructure.Queries;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
 
 DotNetEnv.Env.Load();
 
@@ -14,6 +18,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? throw new InvalidOperationException("Jwt:Issuer is missing.");
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? throw new InvalidOperationException("Jwt:Audience is missing.");
+var jwtSigningKey = builder.Configuration["Jwt:SigningKey"]
+    ?? throw new InvalidOperationException("Jwt:SigningKey is missing.");
+if (Encoding.UTF8.GetByteCount(jwtSigningKey) < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:SigningKey must be at least 32 bytes long.");
+}
+
+var jwtAccessTokenMinutes = builder.Configuration.GetValue<int?>("Jwt:AccessTokenMinutes")
+    ?? throw new InvalidOperationException("Jwt:AccessTokenMinutes is missing.");
+if (jwtAccessTokenMinutes <= 0)
+{
+    throw new InvalidOperationException(
+        "Jwt:AccessTokenMinutes must be greater than zero.");
+}
 
 var connectionString = builder.Configuration.GetConnectionString("BookingDb")
     ?? throw new InvalidOperationException(
@@ -26,13 +50,36 @@ builder.Services.AddIdentityCore<ApplicationUser>()
     .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<BookingDbContext>();
 
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSigningKey)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+            RoleClaimType = ClaimTypes.Role
+        };
+    });
+builder.Services.AddAuthorization();
+
 builder.Services.AddScoped<IUserQueries, UserQueries>();
 builder.Services.AddScoped<IBookingQueries, BookingQueries>();
 
 var app = builder.Build();
 
-await SeedRolesAsync(app);
-await CreateAdminUser(app, builder);
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    await SeedRolesAsync(app);
+    await CreateAdminUser(app, builder);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -42,6 +89,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

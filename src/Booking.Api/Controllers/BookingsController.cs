@@ -1,10 +1,12 @@
 using Booking.Application;
 using Booking.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Booking.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("bookings")]
 public sealed class BookingsController(IBookingQueries bookingQueries)
     : ControllerBase
@@ -17,5 +19,4 @@ public sealed class BookingsController(IBookingQueries bookingQueries)
         return Ok(bookings);
     }
 }
-
 

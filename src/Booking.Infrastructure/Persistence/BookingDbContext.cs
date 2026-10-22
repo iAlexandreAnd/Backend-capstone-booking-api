@@ -11,6 +11,10 @@ public sealed class BookingDbContext(
     public DbSet<BookingDetails> Bookings => Set<BookingDetails>();
     public DbSet<User> DomainUsers => Set<User>();
 
+    public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
+
+    public DbSet<ApplicationRole> ApplicationRoles => Set<ApplicationRole>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

@@ -104,6 +104,42 @@ API Contract
    - `GET /resources/{id}/availability`
    - `POST /resources`
 
+### Getting an access token
+
+The API seeds the Admin account from `Admin:Email` and `Admin:Password`.
+Configure those values and a strong JWT signing key in the ignored repository
+root `.env` file:
+
+```dotenv
+Admin__Email=admin@example.com
+Admin__Password=replace-with-a-strong-admin-password
+Jwt__SigningKey=replace-with-a-random-secret-at-least-32-bytes-long
+```
+
+The JWT issuer, audience, and token lifetime have defaults in `appsettings.json`;
+override them with `Jwt__Issuer`, `Jwt__Audience`, and
+`Jwt__AccessTokenMinutes` as appropriate for your deployment. Never commit the
+signing key or production credentials.
+
+Request a token with the seeded credentials:
+
+```http
+POST https://localhost:7214/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "replace-with-a-strong-admin-password"
+}
+```
+
+Use the returned `accessToken` on protected requests:
+
+```http
+GET https://localhost:7214/bookings/confirmed
+Authorization: Bearer <accessToken>
+```
+
    - `POST /bookings`
    - `DELETE /bookings/{id}`
 
